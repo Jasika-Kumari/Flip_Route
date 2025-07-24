@@ -1,0 +1,140 @@
+
+.faq-container {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 1rem;
+}
+
+
+.faq-section {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+
+.faq-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #0f766e;
+  margin-bottom: 1rem;
+}
+
+.faq-subtitle {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  font-size: 1rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+
+.faq-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+
+.faq-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.faq-item:hover {
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+.faq-question {
+  width: 100%;
+  background: #f9fafb;
+  padding: 1rem 1.5rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #111827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.faq-question:hover {
+  background: #f3f4f6;
+}
+
+
+.faq-icon {
+  font-size: 1.2rem;
+  color: #0f766e;
+  transition: transform 0.3s ease;
+}
+
+.faq-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 1.5rem;
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.6;
+  transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.faq-content.open {
+  max-height: 500px;
+  opacity: 1;
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+}
+
+
+@media (max-width: 768px) {
+  .faq-title {
+    font-size: 1.75rem;
+  }
+
+  .faq-subtitle {
+    font-size: 0.95rem;
+    padding: 0 1rem;
+  }
+
+  .faq-question {
+    font-size: 1rem;
+    padding: 0.9rem 1rem;
+  }
+
+  .faq-content {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .faq-title {
+    font-size: 1.5rem;
+  }
+
+  .faq-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .faq-question {
+    font-size: 0.95rem;
+  }
+}

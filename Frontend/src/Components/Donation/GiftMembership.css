@@ -1,0 +1,101 @@
+/* Background Radial Gradient Animation */
+.bg-radial-gradient {
+  background: radial-gradient(circle at center, rgba(0, 231, 193, 0.15), rgba(0, 43, 39, 0.1));
+  position: absolute;
+  width: 150%;
+  height: 100%;
+  transform: translate(-50%, -50%) scale(1.5);
+  top: 50%;
+  left: 50%;
+  animation: bgMove 8s infinite alternate;
+  filter: blur(80px);
+  z-index: -1;
+}
+
+@keyframes bgMove {
+  0% {
+    transform: translate(-50%, -50%) scale(1.5);
+  }
+  100% {
+    transform: translate(-40%, -60%) scale(1.8);
+  }
+}
+
+/* Perspective for 3D effects */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Image Container 3D Effect */
+.gift-box-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Image Styling */
+.gift-box {
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease, box-shadow 0.6s ease;
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.1);
+  backface-visibility: hidden;
+}
+
+.gift-box:hover {
+  transform: rotateY(20deg) rotateX(12deg) translateZ(30px);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2), 0 30px 50px rgba(0, 0, 0, 0.3);
+}
+
+/* Decorative Glow */
+.gift-box-decoration {
+  background: radial-gradient(circle, rgba(0, 231, 193, 0.4), rgba(0, 95, 79, 0.6));
+  filter: blur(20px);
+  opacity: 0.4;
+  transform: translateZ(-30px);
+}
+
+/* Button Hover Animation */
+button:hover {
+  animation: buttonPop 0.3s ease-out forwards;
+}
+
+@keyframes buttonPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive Improvements */
+@media (max-width: 1024px) {
+  .gift-box {
+    width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .gift-box {
+    width: 100%;
+  }
+
+  .gift-box-container {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gift-box {
+    width: 100%;
+  }
+
+  .gift-box-container {
+    margin-top: 1.5rem;
+  }
+}
