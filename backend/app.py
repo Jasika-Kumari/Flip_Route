@@ -24,10 +24,11 @@ def haversine_distance(coord1, coord2):
 def route():
     try:
         data = request.get_json(force=True)
-        print("Received JSON:", data)
     except Exception as e:
-        print(f"[ERROR] Invalid JSON: {e}")
-        return jsonify({"error": "Invalid JSON format"}), 400
+        print(f"Error parsing JSON: {e}")
+        return jsonify({"error": "Invalid JSON"}), 400
+
+    print("Received JSON:", data)
 
     start = data.get("start", "").strip()
     waypoints = data.get("waypoints", [])
@@ -40,18 +41,13 @@ def route():
     # Geocode all addresses
     all_addresses = [start] + waypoints + [end]
     coords = []
-
     for address in all_addresses:
-        try:
-            coord = geocode_address(address)
-            if not coord:
-                raise ValueError(f"Could not geocode address: {address}")
-            coords.append(coord)
-        except Exception as e:
-            print(f"[ERROR] Geocoding failed for '{address}': {e}")
-            return jsonify({"error": f"Geocoding failed for '{address}'"}), 400
+        coord = geocode_address(address)
+        if not coord:
+            return jsonify({"error": f"Could not geocode address: {address}"}), 400
+        coords.append(coord)
 
-    # Optimize route using nearest-neighbor for 'distance' or 'time'
+    # If optimize = distance, use naive nearest-neighbor (for now)
     ordered_coords = [coords[0]]
     remaining = coords[1:-1]
     current = coords[0]
@@ -62,23 +58,19 @@ def route():
         remaining.remove(next_point)
         current = next_point
 
-    ordered_coords.append(coords[-1])  # End
+    ordered_coords.append(coords[-1])  # Append destination
 
-    # Total distance
+    # Build response
     total_distance = 0.0
     for i in range(len(ordered_coords) - 1):
-        total_distance += haversine_distance(ordered_coords[i], ordered_coords[i + 1])
-
-    # Estimate time (mock 40 km/h avg speed)
-    avg_speed_kmph = 40
-    travel_time_min = round((total_distance / avg_speed_kmph) * 60)
+        total_distance += haversine_distance(ordered_coords[i], ordered_coords[i+1])
 
     return jsonify({
         "route_coords": ordered_coords,
         "distance_km": round(total_distance, 2),
-        "travel_time_min": travel_time_min,
         "status": "success"
     })
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
+
