@@ -24,11 +24,10 @@ def haversine_distance(coord1, coord2):
 def route():
     try:
         data = request.get_json(force=True)
+        print("Received JSON:", data)
     except Exception as e:
-        print(f"Error parsing JSON: {e}")
-        return jsonify({"error": "Invalid JSON"}), 400
-
-    print("Received JSON:", data)
+        print(f"[ERROR] Invalid JSON: {e}")
+        return jsonify({"error": "Invalid JSON format"}), 400
 
     start = data.get("start", "").strip()
     waypoints = data.get("waypoints", [])
@@ -41,13 +40,18 @@ def route():
     # Geocode all addresses
     all_addresses = [start] + waypoints + [end]
     coords = []
-    for address in all_addresses:
-        coord = geocode_address(address)
-        if not coord:
-            return jsonify({"error": f"Could not geocode address: {address}"}), 400
-        coords.append(coord)
 
-    # If optimize = distance, use naive nearest-neighbor (for now)
+    for address in all_addresses:
+        try:
+            coord = geocode_address(address)
+            if not coord:
+                raise ValueError(f"Could not geocode address: {address}")
+            coords.append(coord)
+        except Exception as e:
+            print(f"[ERROR] Geocoding failed for '{address}': {e}")
+            return jsonify({"error": f"Geocoding failed for '{address}'"}), 400
+
+    # Optimize route using nearest-neighbor for 'distance' or 'time'
     ordered_coords = [coords[0]]
     remaining = coords[1:-1]
     current = coords[0]
@@ -58,16 +62,21 @@ def route():
         remaining.remove(next_point)
         current = next_point
 
-    ordered_coords.append(coords[-1])  # Append destination
+    ordered_coords.append(coords[-1])  # End
 
-    # Build response
+    # Total distance
     total_distance = 0.0
     for i in range(len(ordered_coords) - 1):
-        total_distance += haversine_distance(ordered_coords[i], ordered_coords[i+1])
+        total_distance += haversine_distance(ordered_coords[i], ordered_coords[i + 1])
+
+    # Estimate time (mock 40 km/h avg speed)
+    avg_speed_kmph = 40
+    travel_time_min = round((total_distance / avg_speed_kmph) * 60)
 
     return jsonify({
         "route_coords": ordered_coords,
         "distance_km": round(total_distance, 2),
+        "travel_time_min": travel_time_min,
         "status": "success"
     })
 

@@ -1,3 +1,6 @@
 flask
 geopy
 flask-cors
+osmnx
+networkx
+
