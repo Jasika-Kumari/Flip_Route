@@ -3,4 +3,5 @@ geopy
 flask-cors
 osmnx
 networkx
+scikit-learn
 

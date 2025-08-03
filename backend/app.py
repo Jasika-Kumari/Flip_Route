@@ -1,76 +1,70 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from geopy.geocoders import Nominatim
-from geopy.distance import geodesic
+# services/routing_service.py
+import osmnx as ox
+import networkx as nx
+from itertools import permutations
 
-app = Flask(__name__)
-CORS(app)
+GRAPH_PATH = "data/graphs/jharkhand/ranchi.graphml"
+print("📦 Loading Ranchi GraphML...")
+G = ox.load_graphml(GRAPH_PATH)
+print("✅ Graph loaded.")
 
-geolocator = Nominatim(user_agent="route-planner")
+def get_optimized_route(start, end, waypoints, strategy="greedy"):
+    # All coordinates: start + waypoints + end
+    all_points = [start] + waypoints + [end]
+    nodes = [ox.distance.nearest_nodes(G, p['lng'], p['lat']) for p in all_points]
 
-# Helper: Convert address to (lat, lon)
-def geocode_address(address):
-    location = geolocator.geocode(address)
-    if location:
-        return (location.latitude, location.longitude)
+    start_node = nodes[0]
+    end_node = nodes[-1]
+    wp_nodes = nodes[1:-1]
+
+    # Optimize waypoint order
+    if strategy == "brute" and len(wp_nodes) <= 6:
+        path_nodes = find_best_route(G, start_node, wp_nodes, end_node)
     else:
-        return None
+        path_nodes = tsp_greedy(G, start_node, wp_nodes, end_node)
 
-# Helper: Calculate straight-line distance
-def haversine_distance(coord1, coord2):
-    return geodesic(coord1, coord2).km
+    # Create full route using shortest paths
+    full_path = []
+    total_distance = 0
+    for i in range(len(path_nodes) - 1):
+        segment = nx.shortest_path(G, path_nodes[i], path_nodes[i + 1], weight="length")
+        full_path += segment if i == 0 else segment[1:]
+        total_distance += nx.path_weight(G, segment, weight="length")
 
-@app.route('/route', methods=['POST'])
-def route():
-    try:
-        data = request.get_json(force=True)
-    except Exception as e:
-        print(f"Error parsing JSON: {e}")
-        return jsonify({"error": "Invalid JSON"}), 400
+    route_coords = [(G.nodes[n]["y"], G.nodes[n]["x"]) for n in full_path]
+    eta_min = total_distance / (35 * 1000 / 60)  # 35 km/hr average speed
 
-    print("Received JSON:", data)
+    return {
+        "route": route_coords,
+        "distance_m": int(total_distance),
+        "eta_min": round(eta_min, 2)
+    }
 
-    start = data.get("start", "").strip()
-    waypoints = data.get("waypoints", [])
-    end = data.get("end", "").strip()
-    optimize = data.get("optimize", "distance")
+def tsp_greedy(graph, start, waypoints, end):
+    ordered = [start]
+    current = start
+    to_visit = waypoints.copy()
 
-    if not start or not end:
-        return jsonify({"error": "Start and end are required."}), 400
+    while to_visit:
+        next_node = min(to_visit, key=lambda x: nx.shortest_path_length(graph, current, x, weight="length"))
+        ordered.append(next_node)
+        to_visit.remove(next_node)
+        current = next_node
 
-    # Geocode all addresses
-    all_addresses = [start] + waypoints + [end]
-    coords = []
-    for address in all_addresses:
-        coord = geocode_address(address)
-        if not coord:
-            return jsonify({"error": f"Could not geocode address: {address}"}), 400
-        coords.append(coord)
+    ordered.append(end)
+    return ordered
 
-    # If optimize = distance, use naive nearest-neighbor (for now)
-    ordered_coords = [coords[0]]
-    remaining = coords[1:-1]
-    current = coords[0]
+def find_best_route(graph, start, waypoints, end):
+    best_order = None
+    best_distance = float("inf")
 
-    while remaining:
-        next_point = min(remaining, key=lambda x: haversine_distance(current, x))
-        ordered_coords.append(next_point)
-        remaining.remove(next_point)
-        current = next_point
+    for perm in permutations(waypoints):
+        test_path = [start] + list(perm) + [end]
+        dist = 0
+        for i in range(len(test_path) - 1):
+            dist += nx.shortest_path_length(graph, test_path[i], test_path[i + 1], weight="length")
+        if dist < best_distance:
+            best_distance = dist
+            best_order = test_path
 
-    ordered_coords.append(coords[-1])  # Append destination
-
-    # Build response
-    total_distance = 0.0
-    for i in range(len(ordered_coords) - 1):
-        total_distance += haversine_distance(ordered_coords[i], ordered_coords[i+1])
-
-    return jsonify({
-        "route_coords": ordered_coords,
-        "distance_km": round(total_distance, 2),
-        "status": "success"
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True, port=8000)
-
+    return best_order
