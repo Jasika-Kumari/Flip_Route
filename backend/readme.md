@@ -1,13 +1,13 @@
 cd Backend
-python -m venv venv   # create venv  
-venv\Scripts\activate # activate venv  
- pip install -r requirements.txt   # install dependencies
+python -m venv venv    
+venv\Scripts\activate  
+ pip install -r requirements.txt  
 
 
  use this commadn to run backend 
 cd Backend
- venv\Scripts\activate
- python app.py
+venv\Scripts\activate
+python app.py
 
 
 

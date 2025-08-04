@@ -12,11 +12,7 @@ output_dir = os.path.join("data", "graphs", "jharkhand")
 os.makedirs(output_dir, exist_ok=True)
 
 # Major cities in Jharkhand
-cities = [
-   
-
-  
-    "Mango, Jharkhand, India"
+cities = ["Mango, Jharkhand, India"
     
 ]
 
