@@ -221,8 +221,7 @@ export default function RoutePlanner() {
                     </Marker>
                   );
 
-                // Waypoints
-                const waypointNumber = idx; // "1", "2", etc.
+                const waypointNumber = idx;
                 const icon = createDivIcon(<FaMapPin />, 'green', `${waypointNumber}`);
                 return (
                   <Marker key={idx} position={pos} icon={icon}>
@@ -237,6 +236,3 @@ export default function RoutePlanner() {
     </div>
   );
 }
-
-
-
